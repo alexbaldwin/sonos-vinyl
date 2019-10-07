@@ -1,23 +1,13 @@
 #!/usr/bin/env node
 
-const Sonos = require('sonos').Sonos
-const sonos = new Sonos(process.env.SONOS_HOST || '192.168.7.131')
+const obj = require('sonos')
+const sonos = new obj.Sonos( '192.168.7.131')
 
 const STREAM_URL = 'http://192.168.7.136:8000/rapi.mp3'
 const radioUri = 'x-rincon-mp3radio://' + STREAM_URL
 
 const Ffmpeg = require('fluent-ffmpeg')
 const VOLUME_THRESHOLD = -50; // volume threshold
-
-// TODO: Figure out how to compare current playing track and STREAM_URL. Be more intelligent about telling the Sonos to play / stop in the right cases
-// async function getCurrentTrack() {
-//   let track = await sonos.currentTrack({}).then(track => {
-//     // console.log('Now playing: %j', track.uri)
-//     return track.uri
-//   }).then(result){
-//   }
-//   return track
-// }
 
 getMeanVolume(STREAM_URL, function(meanVolume){
   console.log(meanVolume);
@@ -26,12 +16,35 @@ getMeanVolume(STREAM_URL, function(meanVolume){
     console.log('❌ Nothing is playing.')
   }else{
     console.log('✅ Vinyl is spinning')
-  // Play radio station
-  sonos.play(radioUri).then(success => {
-    console.log('Playing...')
-  }).catch(err => { console.log('Error occurred %j', err) })
-    }
+
+    getNowPlaying().then(result => {
+
+      let nowPlaying = result
+
+      console.log('Now playing: ' + nowPlaying)
+      console.log('Radio URI: ' + radioUri)
+      console.log('Truthiness' + (nowPlaying != radioUri))
+
+      if(nowPlaying != radioUri){
+        sonos.flush().then(result => {
+          sonos.queue(radioUri).then(result => {
+            sonos.selectQueue()
+            sonos.play()
+          });
+        });
+      }
+    })
+
+  }
 });
+
+function getNowPlaying(){
+  let track = sonos.currentTrack({}).then(track => {
+    return track.uri
+  })
+
+  return track
+}
 
 function getMeanVolume(streamUrl, callback){
   new Ffmpeg({ source: streamUrl })
