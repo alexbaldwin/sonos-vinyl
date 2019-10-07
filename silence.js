@@ -8,7 +8,7 @@ const radioUri = 'x-rincon-mp3radio://' + STREAM_URL
 const defaultUri = 'x-sonos-htastream:RINCON_949F3ED5FC3E01400:spdif'
 
 const Ffmpeg = require('fluent-ffmpeg')
-const VOLUME_THRESHOLD = -50; // volume threshold
+const VOLUME_THRESHOLD = -48; // volume threshold
 
 getMeanVolume(STREAM_URL, function(meanVolume){
   console.log(meanVolume);
