@@ -20,7 +20,9 @@ getMeanVolume(STREAM_URL, function(meanVolume){
       if(nowPlaying == radioUri){
         console.log('❌ Stopping Sonos Radio')
 
-        sonos.stop()
+        sonos.flush().then(result => {
+          sonos.stop()
+        });
       }
     })
 
