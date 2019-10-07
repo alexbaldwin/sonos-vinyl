@@ -23,9 +23,10 @@ getMeanVolume(STREAM_URL, function(meanVolume){
 
       console.log('Now playing: ' + nowPlaying)
       console.log('Radio URI: ' + radioUri)
-      console.log('Truthiness' + (nowPlaying != radioUri))
 
       if(nowPlaying != radioUri){
+        console.log('✅ Starting Sonos Radio')
+
         sonos.flush().then(result => {
           sonos.queue(radioUri).then(result => {
             sonos.selectQueue()
