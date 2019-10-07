@@ -5,6 +5,7 @@ const sonos = new obj.Sonos( '192.168.7.131')
 
 const STREAM_URL = 'http://192.168.7.136:8000/rapi.mp3'
 const radioUri = 'x-rincon-mp3radio://' + STREAM_URL
+const defaultUri = 'x-sonos-htastream:RINCON_949F3ED5FC3E01400:spdif'
 
 const Ffmpeg = require('fluent-ffmpeg')
 const VOLUME_THRESHOLD = -50; // volume threshold
@@ -14,22 +15,26 @@ getMeanVolume(STREAM_URL, function(meanVolume){
 
   if(meanVolume <= VOLUME_THRESHOLD){
     console.log('❌ Nothing is playing.')
+
+    getNowPlaying().then(nowPlaying => {
+      if(nowPlaying == radioUri){
+        console.log('❌ Stopping Sonos Radio')
+
+        sonos.stop()
+      }
+    })
+
   }else{
     console.log('✅ Vinyl is spinning')
 
-    getNowPlaying().then(result => {
-
-      let nowPlaying = result
-
-      console.log('Now playing: ' + nowPlaying)
-      console.log('Radio URI: ' + radioUri)
-
+    getNowPlaying().then(nowPlaying => {
       if(nowPlaying != radioUri){
         console.log('✅ Starting Sonos Radio')
 
         sonos.flush().then(result => {
           sonos.queue(radioUri).then(result => {
             sonos.selectQueue()
+            sonos.setVolume(36)
             sonos.play()
           });
         });
